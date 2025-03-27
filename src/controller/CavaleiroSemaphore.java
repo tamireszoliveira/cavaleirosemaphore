@@ -43,39 +43,53 @@ public class CavaleiroSemaphore extends Thread {
 			Thread.sleep(interval); // simula caminhada
 			if(d >= 500 && d < 1500 ) {
 				semaforotorch.acquire();
-				if(!hastorch) {
-					System.out.println("cavaleiro " + idperson + " pegou a tocha");
-					hastorch = true;
-					speed +=2;
-				}
+				try {
+					if(!hastorch) {
+						System.out.println("cavaleiro " + idperson + " pegou a tocha");
+						hastorch = true;
+						speed +=2;
+					}			
+				} finally {
 				semaforotorch.release();
 			}
+		}
 			
 			if (d >= 1500 && d < dcorridor) {
 				semaforostone.acquire();
+		try {
 				if(!hastorch && !hastone) {
 					System.out.println("cavaleiro " + idperson + " pegou a pedra");
 					hastone = true;
 					speed +=2;
 				}
+			} finally {
 				semaforostone.release();
 			}
-		} catch(InterruptedException e) {
+		}
+	}catch(InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
 		
-	
+	private static final boolean[] doors = {true, false, false, false};
+	private static final boolean[] chosendoors = new boolean[4];
 	
 	private void door(int d) {
-		boolean door1 = false; // porta 1 fechada - contém a saída
-		/*boolean door2 = false; // porta 2 fechada
-		boolean door3 = false; // porta 3 fechada
-		boolean door4 = false; // porta 4 fechada*/
 	
 		try {
 			semaforoexit.acquire();
+			int door;
+			do {
+				door=(int)(Math.random() * 4);
+			} while(chosendoors[door]); //garantindo que a porta não foi escolhida antes
+			
+			chosendoors[door] = true;
+			if(doors[door]) {
 				System.out.println("O cavaleiro " + idperson + " achou a saída. Os demais, morreram.");
+			} else {
+				System.out.println("O cavaleiro" + idperson + " foi devorado.");
+			}
+				
 		} catch (InterruptedException e){
 				e.printStackTrace();
 		} finally {
