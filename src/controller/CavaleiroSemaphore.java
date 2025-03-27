@@ -14,11 +14,14 @@ public class CavaleiroSemaphore extends Thread {
 	private static final Semaphore semaforostone = new Semaphore(1);
 	private static final Semaphore semaforoexit = new Semaphore(1);
 	
+	
 	private int idperson;
 	private int speed;
 	private boolean  hastorch, hastone = false;
 	private int d = 0; //distancia percorrida pelo cavaleiro
-
+	static boolean cantaketorch, cantakestone = false;
+	
+	
 	public CavaleiroSemaphore(int idperson) {
 		this.idperson = idperson;
 		this.speed = (int)(Math.random()* 3)+2;
@@ -41,12 +44,13 @@ public class CavaleiroSemaphore extends Thread {
 		
 		try {
 			Thread.sleep(interval); // simula caminhada
-			if(d >= 500 && d < 1500 ) {
+			if(d >= 500 &&  !cantaketorch && !hastorch && !hastone ) {
 				semaforotorch.acquire();
 				try {
 					if(!hastorch) {
 						System.out.println("cavaleiro " + idperson + " pegou a tocha");
 						hastorch = true;
+						cantaketorch = true;
 						speed +=2;
 					}			
 				} finally {
@@ -54,7 +58,7 @@ public class CavaleiroSemaphore extends Thread {
 			}
 		}
 			
-			if (d >= 1500 && d < dcorridor) {
+			if (d >= 1500 && !cantakestone && !hastorch && !hastone) {
 				semaforostone.acquire();
 		try {
 				if(!hastorch && !hastone) {
