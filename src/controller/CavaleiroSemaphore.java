@@ -10,117 +10,78 @@ repetir) e entra nela. Apenas uma porta leva à saída. As outras 3 tem monstros
 
 public class CavaleiroSemaphore extends Thread {
 	private static final int dcorridor = 2000;
-	private static final Semaphore semaforo = new Semaphore(1);
+	private static final Semaphore semaforotorch = new Semaphore(1);
+	private static final Semaphore semaforostone = new Semaphore(1);
+	private static final Semaphore semaforoexit = new Semaphore(1);
 	
 	private int idperson;
 	private int speed;
 	private boolean  hastorch, hastone = false;
-	private boolean torch, stone = true;
-	private int d;
+	private int d = 0; //distancia percorrida pelo cavaleiro
 
 	public CavaleiroSemaphore(int idperson) {
 		this.idperson = idperson;
 		this.speed = (int)(Math.random()* 3)+2;
-		this.hastorch = hastorch;
-		this.hastone = hastone;
-	}
+		}
 	
 	@Override
 	public void run() {
-		walk();
+		while(d < dcorridor) {
+			walk();
+		}
 		door(d);
 	}
 
 	public void walk() {
-		int d = 0; //distancia percorrida
-		int increment = 2;
+		
 		int interval = 50; // intervalo em ms
+		d += speed;
 		
-		while( d <500) {
-			d += speed;
-			
-			try {
-				Thread.sleep(interval); // simula caminhada
-				semaforo.acquire();
-				
-				if(torch) {
+		System.out.println("Cavaleiro" + idperson + " andou " + d + " metros.");
+		
+		try {
+			Thread.sleep(interval); // simula caminhada
+			if(d >= 500 && d < 1500 ) {
+				semaforotorch.acquire();
+				if(!hastorch) {
 					System.out.println("cavaleiro " + idperson + " pegou a tocha");
-					torch = false;
 					hastorch = true;
+					speed +=2;
 				}
-				// ajustando a velocidade se o cavaleiro estiver com a tocha
-				if(hastorch) {
-					speed += increment;
-				}	
-				
-			} catch(InterruptedException e ){
-				e.printStackTrace();
-			} finally {
-				semaforo.release();
+				semaforotorch.release();
 			}
+			
+			if (d >= 1500 && d < dcorridor) {
+				semaforostone.acquire();
+				if(!hastorch && !hastone) {
+					System.out.println("cavaleiro " + idperson + " pegou a pedra");
+					hastone = true;
+					speed +=2;
+				}
+				semaforostone.release();
+			}
+		} catch(InterruptedException e) {
+			e.printStackTrace();
 		}
-			
 	}
-
-		public void stone(boolean hastorch, boolean hastone, boolean torch, boolean stone) {
-			int d = 500;
-			int increment = 2;
-			int interval = 50;
-			
-			while( d < 1500) {
-				d += speed;
-				
-				try {
-					Thread.sleep(interval); // simula caminhada
-					semaforo.acquire();
-					
-					if (hastorch) {
-						hastone = false;
-					} else {
-						if(stone) {
-							System.out.println("cavaleiro " + idperson + " pegou a pedra");
-							stone = false;
-							hastone = true;
-					} 
-					if(hastone) { 
-						speed += increment;
-					}
-				}
-			}
-				 catch (InterruptedException e) {
-						e.printStackTrace();
-				} finally {
-						semaforo.release();
-				}
-					
-			}
 		
+	
+	
+	private void door(int d) {
+		boolean door1 = false; // porta 1 fechada - contém a saída
+		/*boolean door2 = false; // porta 2 fechada
+		boolean door3 = false; // porta 3 fechada
+		boolean door4 = false; // porta 4 fechada*/
+	
+		try {
+			semaforoexit.acquire();
+				System.out.println("O cavaleiro " + idperson + " achou a saída. Os demais, morreram.");
+		} catch (InterruptedException e){
+				e.printStackTrace();
+		} finally {
+				semaforoexit.release();
 		}
-		private void door(int d) {
-			boolean door1 = false; // porta 1 fechada - contém a saída
-			/*boolean door2 = false; // porta 2 fechada
-			boolean door3 = false; // porta 3 fechada
-			boolean door4 = false; // porta 4 fechada*/
-			int interval = 50;
-			while(d < 2000) {
-				d+= speed;
-				try {
-					Thread.sleep(interval); // simula caminhada
-					
-					
-					if (door1 == false) {
-						semaforo.acquire();
-						door1 = true;
-						System.out.println("O cavaleiro " + idperson + " achou a saída. Os demais, morreram.");
-					
-						
-					}
-				} catch (InterruptedException e){
-						e.printStackTrace();
-				} finally {
-						semaforo.release();
-				}
-			}
-		}
-
 	}
+}
+
+	
